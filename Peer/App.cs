@@ -18,6 +18,7 @@ namespace Peer
             Console.WriteLine(box);
             Console.ReadLine();
 
+
             box = MusicBox.Load("teste1.txt");
             Console.WriteLine(box);
             box = MusicBox.Load("teste2.txt");
