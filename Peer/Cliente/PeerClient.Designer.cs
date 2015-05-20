@@ -28,8 +28,8 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.textBox1 = new System.Windows.Forms.TextBox();
-            this.button1 = new System.Windows.Forms.Button();
+            this.searchText = new System.Windows.Forms.TextBox();
+            this.searchButton = new System.Windows.Forms.Button();
             this.splitter1 = new System.Windows.Forms.Splitter();
             this.EventLogDisplay = new System.Windows.Forms.TextBox();
             this.EventLog = new System.Windows.Forms.Label();
@@ -37,22 +37,22 @@
             this.KnownPeersLabel = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
-            // textBox1
+            // searchText
             // 
-            this.textBox1.Location = new System.Drawing.Point(28, 38);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(481, 20);
-            this.textBox1.TabIndex = 0;
-            this.textBox1.Text = "Insert music name...";
+            this.searchText.Location = new System.Drawing.Point(28, 38);
+            this.searchText.Name = "searchText";
+            this.searchText.Size = new System.Drawing.Size(481, 20);
+            this.searchText.TabIndex = 0;
+            this.searchText.Text = "Insert music name...";
             // 
-            // button1
+            // searchButton
             // 
-            this.button1.Location = new System.Drawing.Point(227, 76);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(75, 23);
-            this.button1.TabIndex = 1;
-            this.button1.Text = "Search";
-            this.button1.UseVisualStyleBackColor = true;
+            this.searchButton.Location = new System.Drawing.Point(227, 76);
+            this.searchButton.Name = "searchButton";
+            this.searchButton.Size = new System.Drawing.Size(75, 23);
+            this.searchButton.TabIndex = 1;
+            this.searchButton.Text = "Search";
+            this.searchButton.UseVisualStyleBackColor = true;
             // 
             // splitter1
             // 
@@ -100,7 +100,7 @@
             this.KnownPeersLabel.TabIndex = 6;
             this.KnownPeersLabel.Text = "Known Peers";
             // 
-            // Form1
+            // PeerClient
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -111,9 +111,9 @@
             this.Controls.Add(this.EventLog);
             this.Controls.Add(this.EventLogDisplay);
             this.Controls.Add(this.splitter1);
-            this.Controls.Add(this.button1);
-            this.Controls.Add(this.textBox1);
-            this.Name = "Form1";
+            this.Controls.Add(this.searchButton);
+            this.Controls.Add(this.searchText);
+            this.Name = "PeerClient";
             this.Text = "Music Finder";
             this.Load += new System.EventHandler(this.Form1_Load);
             this.ResumeLayout(false);
@@ -123,8 +123,8 @@
 
         #endregion
 
-        public System.Windows.Forms.TextBox textBox1;
-        public System.Windows.Forms.Button button1;
+        public System.Windows.Forms.TextBox searchText;
+        public System.Windows.Forms.Button searchButton;
         public System.Windows.Forms.Splitter splitter1;
         public System.Windows.Forms.TextBox EventLogDisplay;
         public System.Windows.Forms.Label EventLog;

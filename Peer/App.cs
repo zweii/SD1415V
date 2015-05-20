@@ -6,6 +6,7 @@ using System.Runtime.Remoting;
 using System.Runtime.Remoting.Channels;
 using System.Windows.Forms;
 using System.Threading;
+using System.Runtime.Remoting.Channels.Tcp;
 
 namespace Peer
 {
@@ -40,23 +41,33 @@ namespace Peer
         public static PeerClient peerClient;
         public static int TTL = 10;
 
-        public static void Main(string[] args)
+        static void Main(string[] args)
         {
+            if (args.Length != 1)
+            {
+                throw new ArgumentException("Pleas insert xml config name");
+            }
+            Configuration c = Configuration.Load(args[0]);
+
             MusicBox box = new MusicBox();
-            box = MusicBox.Load("Marcelo.txt");
+            box = MusicBox.Load(c.getMusicList());
 
-            List<KeyValuePair<string, string>> knownPeers = new List<KeyValuePair<string, string>>();
+            List<KeyValuePair<string, string>> knownPeers = ConfUtil.parseKnownPeers(c.getKnownPeers());
 
-            knownPeers.Add(new KeyValuePair<string, string>("Jose", "localhost:5001"));
-            knownPeers.Add(new KeyValuePair<string, string>("Rui", "localhost:5002"));
-
-            peer = new PeerUser("Marcelo", "localhost:5000", box, knownPeers);
+            peer = new PeerUser(c.getName(), c.getLocation(), box, knownPeers);
             peerClient = new PeerClient();
             InitiateServer(peer.name, peer.location);
 
+            peerClient.searchButton.Click += OnClick;
+
             Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
+            //Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(peerClient);
+        }
+
+        private static void OnClick(object sender, EventArgs e)
+        {
+            CreateSearch(peerClient.searchText.Text);
         }
 
         public static void SendSearchRequestTo(string name, string location, SearchQuery searchQuery)
@@ -64,8 +75,14 @@ namespace Peer
             ISearchQueryHandler sqh = (ISearchQueryHandler)Activator.GetObject(typeof(SearchQueryHandler), "tcp://" + location + "/searchQuery");
             //RemotingConfiguration.RegisteredActivatedClientType(typeof(SearchQuery), "tcp://" + location + "/searchQuery"); // NAO SEI O QUE ISTO
             peerClient.EventLogDisplay.AppendLine(string.Format("Search request send to {0}:{1}, looking for '{2}'",name,location, searchQuery.QueryString));
-
-            sqh.Search(searchQuery);
+            try
+            {
+                sqh.Search(searchQuery);
+            }
+            catch (System.Net.Sockets.SocketException e)
+            {
+                peerClient.EventLogDisplay.AppendLine(string.Format("Error connecting to peer {0}:{1} ", name, location));
+            }
         }
         public static void SendHitRequestTo(string name, string location, int id,SearchHit searchHit)
         {
@@ -73,7 +90,13 @@ namespace Peer
             //RemotingConfiguration.RegisteredActivatedClientType(typeof(SearchHit), "tcp://" + location + "/searchHit"); // NAO SEI O QUE ISTO
             peerClient.EventLogDisplay.AppendLine(string.Format("Hit request send to {0}:{1}", name, location));
 
-            shh.Hit(id, searchHit);
+            try{
+                shh.Hit(id, searchHit);
+            }
+            catch (System.Net.Sockets.SocketException e)
+            {
+                peerClient.EventLogDisplay.AppendLine(string.Format("Error connecting to peer {0}:{1} ", name, location));
+            }
         }
 
         public static void CreateSearch(string searchQuery)
@@ -87,7 +110,7 @@ namespace Peer
         {
 
             //this.EventLogDisplay.("Inicio do CalcServer");
-            TcpChannel ch = new TcpChannel(location);
+            TcpChannel ch = new TcpChannel(GetPortFromdomain(location));
 
             ChannelServices.RegisterChannel(ch, false);
             RemotingConfiguration.RegisterWellKnownServiceType(
@@ -103,6 +126,11 @@ namespace Peer
             //WellKnownObjectMode.SingleCall); // cada pedido é servido por um novo objecto
             WellKnownObjectMode.Singleton); // pedidos servidos pelo mesmo objecto
             //RemotingConfiguration.RegisterActivatedServiceType(typeof(SearchHit));// NAO SEI O QUE ISTO
+        }
+
+        private static int GetPortFromdomain(string location)
+        {
+            return Int32.Parse(location.Split(new Char[] { ':' })[1]);
         }
     }
 }

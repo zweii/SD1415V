@@ -35,7 +35,7 @@ namespace Models
 
         public bool AllreadyReceived(SearchQuery searchQuery)
         {
-            return _lastRequests.Exists((s) => s.ID == searchQuery.ID && s.OwnerName == searchQuery.OwnerName));
+            return _lastRequests.Exists((s) => s.ID == searchQuery.ID && s.OwnerName == searchQuery.OwnerName);
         }
 
         internal void ReceivedFrom(string lastName, string lastLocation)
@@ -51,10 +51,12 @@ namespace Models
 
         public void Propagate(SearchQuery searchQuery)
         {
+            App.peerClient.EventLogDisplay.AppendText(name + location);
             searchQuery.LastName = name;
             searchQuery.LastLocation = location;
             foreach (KeyValuePair<string, string> pair in _knownPeers)
             {
+                App.peerClient.EventLogDisplay.AppendText(pair.Key + pair.Value);
                 if (searchQuery.OwnerName != pair.Key && searchQuery.OwnerLocation != pair.Value && searchQuery.LastName != pair.Key && searchQuery.LastLocation != pair.Value)
                     App.SendSearchRequestTo(pair.Key, pair.Value, searchQuery);
             }
@@ -72,6 +74,11 @@ namespace Models
             SearchQuery ret = new SearchQuery(size, name, location, searchQuery, App.TTL);
             _mySearchs.Add(new MySearchs(size, ret));
             return ret;
+        }
+
+        internal void addReceived(SearchQuery searchQuery)
+        {
+            _lastRequests.Add(searchQuery);
         }
     }
 

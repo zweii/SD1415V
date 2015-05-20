@@ -44,6 +44,8 @@ namespace Models
             //    IF YES DISCARD -LOG DISCARD REASON //END
             if (peer.AllreadyReceived(this)) { pc.EventLogDisplay.AppendLine(string.Format(" {0}:{1} -> Request allready received before dropping request...", OwnerName, ID)); return; }
 
+            peer.addReceived(this);
+
             //DECREMENT NUMBER OF HOPS
             TTL--;
             //CHECK IF NUMBER OF HOPS EXCEEDS MAXIMUM
