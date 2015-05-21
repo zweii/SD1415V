@@ -7,6 +7,7 @@ using System.Runtime.Remoting.Channels;
 using System.Windows.Forms;
 using System.Threading;
 using System.Runtime.Remoting.Channels.Tcp;
+using System.Threading.Tasks;
 
 namespace Peer
 {
@@ -17,8 +18,12 @@ namespace Peer
         private int _requestsReceived = 0;
         public void Search(SearchQuery sq)
         {
-            Interlocked.Increment(ref _requestsReceived);
-            sq.Receive(App.peer,App.peerClient);
+            Task.Run(() =>
+                {
+                    Interlocked.Increment(ref _requestsReceived);
+                    sq.Receive(App.peer, App.peerClient);
+                }
+            );
         }
     }
 
@@ -29,9 +34,13 @@ namespace Peer
         private int _hitsReceived = 0;
         public void Hit(int id,SearchHit sh)
         {
-            SearchQuery sq = App.peer.GotHit(id, sh);
-            App.peerClient.EventLogDisplay.AppendLine(string.Format(" SearchQuery {0} searching for '{1}' has got results from {2}:{3}",sq.ID,sq.QueryString,sh.OwnerName,sh.OwnerLocation));
-            Interlocked.Increment(ref _hitsReceived);
+            Task.Run(() =>
+                {
+                    SearchQuery sq = App.peer.GotHit(id, sh);
+                    App.peerClient.EventLogDisplay.AppendLine(string.Format(" SearchQuery {0} searching for '{1}' has got results from {2}:{3}", sq.ID, sq.QueryString, sh.OwnerName, sh.OwnerLocation));
+                    Interlocked.Increment(ref _hitsReceived);
+                }
+            );
         }
     }
 
@@ -118,14 +127,12 @@ namespace Peer
                 "searchQuery",
             //WellKnownObjectMode.SingleCall); // cada pedido é servido por um novo objecto
             WellKnownObjectMode.Singleton); // pedidos servidos pelo mesmo objecto
-            //RemotingConfiguration.RegisterActivatedServiceType(typeof(SearchQuery)); // NAO SEI O QUE ISTO
 
             RemotingConfiguration.RegisterWellKnownServiceType(
                 typeof(SearchHitHandler),
                 "searchHit",
             //WellKnownObjectMode.SingleCall); // cada pedido é servido por um novo objecto
             WellKnownObjectMode.Singleton); // pedidos servidos pelo mesmo objecto
-            //RemotingConfiguration.RegisterActivatedServiceType(typeof(SearchHit));// NAO SEI O QUE ISTO
         }
 
         private static int GetPortFromdomain(string location)

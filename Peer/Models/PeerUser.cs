@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Peer;
+using System.Threading.Tasks;
 
 namespace Models
 {
@@ -38,10 +39,13 @@ namespace Models
             return _lastRequests.Exists((s) => s.ID == searchQuery.ID && s.OwnerName == searchQuery.OwnerName);
         }
 
-        internal void ReceivedFrom(string lastName, string lastLocation)
+        public void ReceivedFrom(string lastName, string lastLocation)
         {
+
             KeyValuePair<string, string> peer = new KeyValuePair<string, string>(lastName, lastLocation);
-            if (!_knownPeers.Contains(peer)) _knownPeers.Add(peer);
+            lock(_knownPeers) {
+                if (!_knownPeers.Contains(peer)) _knownPeers.Add(peer);
+            }
         }
 
         public List<Music> FulfillRequest(string queryString)
@@ -51,14 +55,14 @@ namespace Models
 
         public void Propagate(SearchQuery searchQuery)
         {
-            App.peerClient.EventLogDisplay.AppendText(name + location);
+            string auxLastName = searchQuery.LastName;
+            string auxLastLocation = searchQuery.LastLocation;
             searchQuery.LastName = name;
             searchQuery.LastLocation = location;
             foreach (KeyValuePair<string, string> pair in _knownPeers)
             {
-                App.peerClient.EventLogDisplay.AppendText(pair.Key + pair.Value);
-                if (searchQuery.OwnerName != pair.Key && searchQuery.OwnerLocation != pair.Value && searchQuery.LastName != pair.Key && searchQuery.LastLocation != pair.Value)
-                    App.SendSearchRequestTo(pair.Key, pair.Value, searchQuery);
+                if (searchQuery.OwnerName != pair.Key && searchQuery.OwnerLocation != pair.Value && auxLastName != pair.Key && auxLastLocation != pair.Value)
+                    Task.Run(() => App.SendSearchRequestTo(pair.Key, pair.Value, searchQuery)) ;
             }
         }
 
@@ -76,9 +80,9 @@ namespace Models
             return ret;
         }
 
-        internal void addReceived(SearchQuery searchQuery)
+        public void addReceived(SearchQuery searchQuery)
         {
-            _lastRequests.Add(searchQuery);
+            lock(_lastRequests) { _lastRequests.Add(searchQuery); }
         }
     }
 

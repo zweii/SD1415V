@@ -17,7 +17,7 @@ namespace Models
 
         public void AddHit(SearchHit sh)
         {
-            _answers.Add(sh);
+           lock(_answers) { _answers.Add(sh); }
         }
         public List<SearchHit> GetHits() { return _answers; }
     }
