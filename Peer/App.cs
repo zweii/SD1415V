@@ -18,12 +18,9 @@ namespace Peer
         private int _requestsReceived = 0;
         public void Search(SearchQuery sq)
         {
-            Task.Run(() =>
-                {
                     Interlocked.Increment(ref _requestsReceived);
                     sq.Receive(App.peer, App.peerClient);
-                }
-            );
+           
         }
     }
 
@@ -34,13 +31,11 @@ namespace Peer
         private int _hitsReceived = 0;
         public void Hit(int id,SearchHit sh)
         {
-            Task.Run(() =>
-                {
+            
                     SearchQuery sq = App.peer.GotHit(id, sh);
                     App.peerClient.EventLogDisplay.AppendLine(string.Format(" SearchQuery {0} searching for '{1}' has got results from {2}:{3}", sq.ID, sq.QueryString, sh.OwnerName, sh.OwnerLocation));
                     Interlocked.Increment(ref _hitsReceived);
-                }
-            );
+             
         }
     }
 
@@ -111,8 +106,11 @@ namespace Peer
         public static void CreateSearch(string searchQuery)
         {
             SearchQuery sq = peer.CreateSearch(searchQuery);
-            peerClient.EventLogDisplay.AppendLine(string.Format("Search created, looking for '{0}'", sq.QueryString));
-            peer.Propagate(sq);
+            Task.Run(() => {
+                int x = peer.Propagate(sq);
+                 peerClient.EventLogDisplay.AppendLine(string.Format("Search created, looking for '{0}' search sent to {1} known Peers", sq.QueryString,x));
+            }
+            );
         }
 
         private static void InitiateServer(string name, string location)

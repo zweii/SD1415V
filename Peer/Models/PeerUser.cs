@@ -53,8 +53,9 @@ namespace Models
             return _box.Search(queryString);
         }
 
-        public void Propagate(SearchQuery searchQuery)
+        public int Propagate(SearchQuery searchQuery)
         {
+            int n = 0;
             string auxLastName = searchQuery.LastName;
             string auxLastLocation = searchQuery.LastLocation;
             searchQuery.LastName = name;
@@ -62,8 +63,12 @@ namespace Models
             foreach (KeyValuePair<string, string> pair in _knownPeers)
             {
                 if (searchQuery.OwnerName != pair.Key && searchQuery.OwnerLocation != pair.Value && auxLastName != pair.Key && auxLastLocation != pair.Value)
-                    Task.Run(() => App.SendSearchRequestTo(pair.Key, pair.Value, searchQuery)) ;
+                {
+                    App.SendSearchRequestTo(pair.Key, pair.Value, searchQuery);
+                    ++n;
+                }
             }
+            return n;
         }
 
         public void Success(SearchQuery sq,List<Music> m)

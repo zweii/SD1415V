@@ -56,7 +56,7 @@ namespace Models
             //CHECK IF YOU CAN FULFILL REQUEST
             //    IF NO PROPAGATE REQUEST FOR YOUR KNOWN PEERS -LOG RELAY //END
             List<Music> m = peer.FulfillRequest(QueryString);
-            if (m.Count == 0) { peer.Propagate(this); pc.EventLogDisplay.AppendLine(string.Format(" {0}:{1} -> Request has been propagated to known peers", OwnerName, ID)); return; }
+            if (m.Count == 0) { int x = peer.Propagate(this); pc.EventLogDisplay.AppendLine(string.Format(" {0}:{1} -> Request has been propagated to {2} known peers", OwnerName, ID,x)); return; }
 
             //RETURN TO REQUEST OWNER MUSIC OBJECT
             //LOG SUCCESS
